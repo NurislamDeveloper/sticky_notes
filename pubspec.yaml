@@ -1,5 +1,5 @@
 name: sticky_notes
-description: "A new Flutter project."
+description: "Sticky Notes App - Clean Architecture with Authentication"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -31,9 +31,34 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  # UI
   cupertino_icons: ^1.0.8
+  
+  # State Management (Clean Architecture)
+  flutter_bloc: ^8.1.6
+  
+  # Dependency Injection
+  get_it: ^7.7.0
+  
+  # Local Database
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  
+  # Password Hashing
+  crypto: ^3.0.3
+  
+  # Input Validation
+  email_validator: ^2.1.17
+  
+  # Image picker for avatar
+  image_picker: ^1.0.7
+  
+  # Path provider for saving images
+  path_provider: ^2.1.2
+  
+  # Utilities
+  equatable: ^2.0.5
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:
