@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../widgets/auth_form.dart';
-import 'sticky_notes_page.dart';
+import 'habit_tracking_page.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -26,7 +26,7 @@ class _AuthPageState extends State<AuthPage> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
-                      const StickyNotesPage(),
+                      const HabitTrackingPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     return FadeTransition(opacity: animation, child: child);
                   },

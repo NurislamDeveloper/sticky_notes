@@ -6,7 +6,7 @@ import 'dart:io';
 import '../bloc/auth/auth_bloc.dart';
 import '../../domain/entities/user.dart';
 import '../../injection/injection_container.dart' as di;
-import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../../data/datasources/user_local_datasource.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -33,7 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (userModel?.avatarPath != null &&
             userModel!.avatarPath!.isNotEmpty) {
-          final avatarFile = File(userModel.avatarPath!);
+          final avatarFile = File(userModel!.avatarPath!);
           if (await avatarFile.exists()) {
             setState(() {
               _avatarImage = avatarFile;
@@ -54,64 +54,97 @@ class _ProfilePageState extends State<ProfilePage> {
         maxHeight: 400,
         imageQuality: 85,
       );
+      
       if (image != null && mounted) {
-        final authBloc = context.read<AuthBloc>();
-        final scaffoldMessenger = ScaffoldMessenger.of(context);
-        final Directory appDir = await getApplicationDocumentsDirectory();
-        final String fileName =
-            'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final String avatarPath = '${appDir.path}/$fileName';
-        final File avatarFile = File(image.path);
-        await avatarFile.copy(avatarPath);
-        final authState = authBloc.state;
-        if (authState is AuthSuccess && authState.user.id != null) {
-          final authRepository = di.sl<AuthRepositoryImpl>();
-          final result = await authRepository.updateAvatar(
-            userId: authState.user.id!,
-            avatarPath: avatarPath,
-          );
-
-          result.fold(
-            (error) {
-              if (mounted) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error saving avatar: $error'),
-                    backgroundColor: Colors.red[700],
-                  ),
-                );
-              }
-            },
-            (_) {
-              if (mounted) {
-                setState(() {
-                  _avatarImage = File(avatarPath);
-                });
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Avatar saved successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-          );
+        await _saveAvatarImage(image);
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = 'Error picking image';
+        
+        if (e.toString().contains('channel-error')) {
+          errorMessage = 'Image picker not available in simulator. Please test on a real device.';
+        } else if (e.toString().contains('Permission denied')) {
+          errorMessage = 'Permission denied. Please allow access to photos in Settings.';
+        } else if (e.toString().contains('No application found')) {
+          errorMessage = 'No gallery app found. Please install a gallery app.';
+        } else if (e.toString().contains('User cancelled')) {
+          return;
         } else {
-          if (mounted) {
-            scaffoldMessenger.showSnackBar(
-              SnackBar(
-                content: const Text('User not found. Please log in again.'),
-                backgroundColor: Colors.red[700],
-              ),
-            );
-          }
+          errorMessage = 'Error picking image: ${e.toString()}';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red[700],
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveAvatarImage(XFile image) async {
+    try {
+      final authBloc = context.read<AuthBloc>();
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final String fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final String avatarPath = '${appDir.path}/$fileName';
+      
+      final File avatarFile = File(image.path);
+      await avatarFile.copy(avatarPath);
+      
+      final authState = authBloc.state;
+      if (authState is AuthSuccess && authState.user.id != null) {
+        final authRepository = di.sl<AuthRepository>();
+        final result = await authRepository.updateAvatar(
+          userId: authState.user.id!,
+          avatarPath: avatarPath,
+        );
+
+        result.fold(
+          (error) {
+            if (mounted) {
+              scaffoldMessenger.showSnackBar(
+                SnackBar(
+                  content: Text('Error saving avatar: $error'),
+                  backgroundColor: Colors.red[700],
+                ),
+              );
+            }
+          },
+          (_) {
+            if (mounted) {
+              setState(() {
+                _avatarImage = File(avatarPath);
+              });
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Avatar saved successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          },
+        );
+      } else {
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: const Text('User not found. Please log in again.'),
+              backgroundColor: Colors.red[700],
+            ),
+          );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error picking image: $e'),
+            content: Text('Error saving image: ${e.toString()}'),
             backgroundColor: Colors.red[700],
           ),
         );
@@ -442,9 +475,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
-
           const SizedBox(height: 24),
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -548,10 +579,8 @@ class _ProfilePageState extends State<ProfilePage> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-
                 final authBloc = context.read<AuthBloc>();
                 final navigator = Navigator.of(context);
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Row(
@@ -566,7 +595,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     duration: const Duration(seconds: 2),
                   ),
                 );
-
                 Future.delayed(const Duration(milliseconds: 500), () {
                   authBloc.add(SignOutRequested());
                   navigator.pushReplacementNamed('/auth');

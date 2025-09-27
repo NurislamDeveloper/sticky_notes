@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../injection/injection_container.dart' as di;
 import '../presentation/bloc/auth/auth_bloc.dart';
+import '../presentation/bloc/habit/habit_bloc.dart';
 import '../presentation/pages/auth_page.dart';
 import '../presentation/pages/home_page.dart';
 import 'app_theme.dart';
@@ -14,8 +15,15 @@ class AppInitializer {
   }
   
   static Widget createApp() {
-    return BlocProvider(
-      create: (context) => di.sl<AuthBloc>()..add(CheckAuthStatus()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => di.sl<AuthBloc>()..add(CheckAuthStatus()),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<HabitBloc>(),
+        ),
+      ],
       child: MaterialApp(
         title: 'Sticky Notes',
         theme: AppTheme.lightTheme,

@@ -244,11 +244,11 @@ class _AuthFormState extends State<AuthForm> {
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: Colors.grey[300] ?? Colors.grey),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: Colors.grey[300] ?? Colors.grey),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -256,11 +256,11 @@ class _AuthFormState extends State<AuthForm> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!),
+          borderSide: BorderSide(color: Colors.red[300] ?? Colors.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!, width: 2),
+          borderSide: BorderSide(color: Colors.red[300] ?? Colors.red, width: 2),
         ),
         filled: true,
         fillColor: Colors.grey[50],
@@ -273,7 +273,7 @@ class _AuthFormState extends State<AuthForm> {
   }
 
   void _submitForm() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState?.validate() ?? false) {
       if (_isSignUp) {
         context.read<AuthBloc>().add(
           SignUpRequested(

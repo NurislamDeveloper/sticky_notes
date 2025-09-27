@@ -10,6 +10,8 @@ class AppConfig {
   
   static const String authRoute = '/auth';
   static const String homeRoute = '/home';
+  static const String habitTrackingRoute = '/habits';
+  static const String profileRoute = '/profile';
   
   static const String databaseName = 'sticky_notes.db';
   static const int databaseVersion = 1;

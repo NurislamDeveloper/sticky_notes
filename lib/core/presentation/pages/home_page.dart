@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
-import 'sticky_notes_page.dart';
+import 'habit_tracking_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,7 +11,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Sticky Notes'),
+        title: const Text('Habit Tracker'),
         backgroundColor: const Color(0xFF1E3A8A),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -45,13 +45,13 @@ class HomePage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(
-            Icons.sticky_note_2,
+            Icons.fitness_center,
             size: 100,
             color: Color(0xFF1E3A8A),
           ),
           const SizedBox(height: 24),
           Text(
-            'Welcome to Sticky Notes!',
+            'Welcome to Habit Tracker!',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1E3A8A),
@@ -59,7 +59,7 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Your secure, local note-taking app',
+            'Build better habits, one day at a time',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.grey[600],
             ),
@@ -69,11 +69,13 @@ class HomePage extends StatelessWidget {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const StickyNotesPage()),
+                MaterialPageRoute(
+                  builder: (context) => const HabitTrackingPage(),
+                ),
               );
             },
-            icon: const Icon(Icons.sticky_note_2),
-            label: const Text('Start Taking Notes'),
+            icon: const Icon(Icons.fitness_center),
+            label: const Text('Start Tracking Habits'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1E3A8A),
               foregroundColor: Colors.white,

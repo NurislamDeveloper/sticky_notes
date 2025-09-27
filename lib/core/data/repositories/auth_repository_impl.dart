@@ -85,7 +85,9 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Left('Invalid email or password');
       }
 
-      await _userLocalDataSource.updateLastLogin(userModel.id!, DateTime.now());
+      if (userModel.id != null) {
+        await _userLocalDataSource.updateLastLogin(userModel.id!, DateTime.now());
+      }
 
       final user = userModel.toEntity();
       return Right(AuthResult.success(user));

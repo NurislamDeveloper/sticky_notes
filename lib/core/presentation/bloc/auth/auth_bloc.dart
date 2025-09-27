@@ -38,10 +38,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthFailure(failure)),
       (authResult) {
-        if (authResult.isSuccess) {
+        if (authResult.isSuccess && authResult.user != null) {
           emit(AuthSuccess(authResult.user!));
         } else {
-          emit(AuthFailure(authResult.errorMessage!));
+          emit(AuthFailure(authResult.errorMessage ?? 'Unknown error occurred'));
         }
       },
     );
@@ -61,10 +61,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthFailure(failure)),
       (authResult) {
-        if (authResult.isSuccess) {
+        if (authResult.isSuccess && authResult.user != null) {
           emit(AuthSuccess(authResult.user!));
         } else {
-          emit(AuthFailure(authResult.errorMessage!));
+          emit(AuthFailure(authResult.errorMessage ?? 'Unknown error occurred'));
         }
       },
     );
