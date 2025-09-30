@@ -1,119 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
+import 'package:sticky_notes/core/presentation/bloc/habit/habit_event.dart';
 import '../../../domain/entities/habit.dart';
 import '../../../domain/usecases/create_habit_usecase.dart';
 import '../../../domain/usecases/get_user_habits_usecase.dart';
 import '../../../domain/usecases/complete_habit_usecase.dart';
 import '../../../domain/usecases/delete_habit_usecase.dart';
+import 'habit_state.dart';
 
-abstract class HabitEvent extends Equatable {
-  const HabitEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class LoadUserHabits extends HabitEvent {
-  final int userId;
-
-  const LoadUserHabits(this.userId);
-
-  @override
-  List<Object?> get props => [userId];
-}
-
-class CreateHabit extends HabitEvent {
-  final CreateHabitParams params;
-
-  const CreateHabit(this.params);
-
-  @override
-  List<Object?> get props => [params];
-}
-
-class CompleteHabit extends HabitEvent {
-  final int habitId;
-
-  const CompleteHabit(this.habitId);
-
-  @override
-  List<Object?> get props => [habitId];
-}
-
-class SearchHabits extends HabitEvent {
-  final int userId;
-  final String query;
-
-  const SearchHabits(this.userId, this.query);
-
-  @override
-  List<Object?> get props => [userId, query];
-}
-
-class DeleteHabit extends HabitEvent {
-  final int habitId;
-
-  const DeleteHabit(this.habitId);
-
-  @override
-  List<Object?> get props => [habitId];
-}
-
-abstract class HabitState extends Equatable {
-  const HabitState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class HabitInitial extends HabitState {}
-
-class HabitLoading extends HabitState {}
-
-class HabitSuccess extends HabitState {
-  final List<Habit> habits;
-
-  const HabitSuccess(this.habits);
-
-  @override
-  List<Object?> get props => [habits];
-}
-
-class HabitCreated extends HabitState {
-  final Habit habit;
-
-  const HabitCreated(this.habit);
-
-  @override
-  List<Object?> get props => [habit];
-}
-
-class HabitCompleted extends HabitState {
-  final Habit habit;
-
-  const HabitCompleted(this.habit);
-
-  @override
-  List<Object?> get props => [habit];
-}
-
-class HabitDeleted extends HabitState {
-  final int habitId;
-
-  const HabitDeleted(this.habitId);
-
-  @override
-  List<Object?> get props => [habitId];
-}
-
-class HabitFailure extends HabitState {
-  final String message;
-
-  const HabitFailure(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
 
 class HabitBloc extends Bloc<HabitEvent, HabitState> {
   final CreateHabitUseCase _createHabitUseCase;
@@ -178,7 +71,6 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
         return;
       }
       
-      // Refresh the habits list after creating a new one
       final habitsResult = await _getUserHabitsUseCase(habit.userId);
       
       if (habitsResult.isLeft()) {
@@ -212,7 +104,6 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
         return;
       }
       
-      // Update the habits list after completion
       final habitsResult = await _getUserHabitsUseCase(habit.userId);
       
       if (habitsResult.isLeft()) {
@@ -245,7 +136,6 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       if (event.query.isEmpty) {
         emit(HabitSuccess(habits));
       } else {
-        // Filter habits based on search query
         final filteredHabits = habits.where((habit) =>
           habit.title.toLowerCase().contains(event.query.toLowerCase()) ||
           habit.description.toLowerCase().contains(event.query.toLowerCase()) ||
@@ -270,7 +160,6 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
         return;
       }
       
-      // Simply emit deleted state - let the UI handle refreshing
       emit(HabitDeleted(event.habitId));
     } catch (e) {
       emit(HabitFailure('Failed to delete habit: $e'));

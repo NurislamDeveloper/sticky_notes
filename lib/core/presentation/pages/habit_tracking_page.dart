@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/habit/habit_bloc.dart';
+import '../bloc/habit/habit_event.dart';
+import '../bloc/habit/habit_state.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/loading_widget.dart';
@@ -108,12 +110,12 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
           backgroundColor: const Color(0xFF1E3A8A),
           foregroundColor: Colors.white,
           elevation: 0,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () => _showLogoutConfirmation(context),
-                ),
-              ],
+              // actions: [
+              //   IconButton(
+              //     icon: const Icon(Icons.logout),
+              //     onPressed: () => _showLogoutConfirmation(context),
+              //   ),
+              // ],
         ),
             body: BlocListener<HabitBloc, HabitState>(
               listener: (context, state) {
@@ -171,12 +173,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _showLogoutConfirmation(context),
-          ),
-        ],
       ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
@@ -185,114 +181,13 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 80,
-                          backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
-                          child: state.user.avatarPath != null && state.user.avatarPath!.isNotEmpty
-                              ? ClipOval(
-                                  child: Image.file(
-                                    File(state.user.avatarPath!),
-                                    width: 160,
-                                    height: 160,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.person,
-                                  size: 80,
-                                  color: Color(0xFF1E3A8A),
-                                ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.user.username,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E3A8A),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          state.user.email,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () => _changeAvatar(context, state.user.id!),
-                          icon: const Icon(Icons.camera_alt, size: 16),
-                          label: const Text('Change Avatar'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E3A8A),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E3A8A).withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
-                              width: 1,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Account Information',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E3A8A),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _buildInfoRow('User ID', state.user.id?.toString() ?? 'N/A'),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Username', state.user.username),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Email', state.user.email),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Account Created', '${state.user.createdAt.day}/${state.user.createdAt.month}/${state.user.createdAt.year}'),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Last Login', state.user.lastLoginAt != null 
-                                  ? '${state.user.lastLoginAt!.day}/${state.user.lastLoginAt!.month}/${state.user.lastLoginAt!.year}'
-                                  : 'Never'),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Avatar Status', state.user.avatarPath != null && state.user.avatarPath!.isNotEmpty 
-                                  ? 'Custom Avatar Set'
-                                  : 'Default Avatar'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildProfileCard(state.user),
+                  const SizedBox(height: 16),
+                  _buildUserInfoCard(state.user),
+                  const SizedBox(height: 16),
+                  _buildAccountInfoCard(state.user),
+                  const SizedBox(height: 16),
+                  _buildLogoutCard(context),
                 ],
               ),
             );
@@ -463,6 +358,232 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         );
   }
 
+  Widget _buildProfileCard(dynamic user) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 80,
+            backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
+            child: _buildAvatarImage(user.avatarPath),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            user.username,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            user.email,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => _changeAvatar(context, user.id!),
+            icon: const Icon(Icons.camera_alt, size: 16),
+            label: const Text('Change Avatar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E3A8A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserInfoCard(dynamic user) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'User Information',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow('User ID', user.id?.toString() ?? 'N/A'),
+          const SizedBox(height: 12),
+          _buildInfoRow('Username', user.username),
+          const SizedBox(height: 12),
+          _buildInfoRow('Email', user.email),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountInfoCard(dynamic user) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Account Details',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow('Account Created', '${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}'),
+          const SizedBox(height: 12),
+          _buildInfoRow('Last Login', user.lastLoginAt != null 
+              ? '${user.lastLoginAt!.day}/${user.lastLoginAt!.month}/${user.lastLoginAt!.year}'
+              : 'Never'),
+          const SizedBox(height: 12),
+          _buildInfoRow('Avatar Status', _getAvatarStatus(user.avatarPath)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Account Actions',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showLogoutConfirmation(context),
+              icon: const Icon(Icons.logout, size: 20),
+              label: const Text('Sign Out'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getAvatarStatus(String? avatarPath) {
+    if (avatarPath == null || avatarPath.isEmpty) {
+      return 'Default Avatar';
+    }
+
+    final File avatarFile = File(avatarPath);
+    if (!avatarFile.existsSync()) {
+      return 'Avatar File Missing';
+    }
+
+    return 'Custom Avatar Set';
+  }
+
+  Widget _buildAvatarImage(String? avatarPath) {
+    if (avatarPath == null || avatarPath.isEmpty) {
+      return const Icon(
+        Icons.person,
+        size: 80,
+        color: Color(0xFF1E3A8A),
+      );
+    }
+
+    final File avatarFile = File(avatarPath);
+    if (!avatarFile.existsSync()) {
+      return const Icon(
+        Icons.person,
+        size: 80,
+        color: Color(0xFF1E3A8A),
+      );
+    }
+
+    return ClipOval(
+      child: Image.file(
+        avatarFile,
+        width: 160,
+        height: 160,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.person,
+            size: 80,
+            color: Color(0xFF1E3A8A),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildInfoRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -505,27 +626,38 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         final Directory appDir = await getApplicationDocumentsDirectory();
         final String fileName = 'avatar_$userId.jpg';
         final String avatarPath = '${appDir.path}/$fileName';
+        
         final File avatarFile = File(avatarPath);
+        
+        if (avatarFile.existsSync()) {
+          await avatarFile.delete();
+        }
+        
         await avatarFile.writeAsBytes(await image.readAsBytes());
-        context.read<AuthBloc>().add(UpdateAvatarRequested(
-          userId: userId,
-          avatarPath: avatarPath,
-        ));
+        
+        if (avatarFile.existsSync()) {
+          context.read<AuthBloc>().add(UpdateAvatarRequested(
+            userId: userId,
+            avatarPath: avatarPath,
+          ));
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Avatar updated successfully!'),
-              ],
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('Avatar updated successfully!'),
+                ],
+              ),
+              backgroundColor: Colors.green[600],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
             ),
-            backgroundColor: Colors.green[600],
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+          );
+        } else {
+          throw Exception('Failed to save avatar file');
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/habit/habit_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
+import '../bloc/habit/habit_event.dart';
+import '../bloc/habit/habit_state.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
