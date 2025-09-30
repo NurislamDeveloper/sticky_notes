@@ -4,6 +4,7 @@ import '../../../domain/entities/habit.dart';
 import '../../../domain/usecases/create_habit_usecase.dart';
 import '../../../domain/usecases/get_user_habits_usecase.dart';
 import '../../../domain/usecases/complete_habit_usecase.dart';
+import '../../../domain/usecases/delete_habit_usecase.dart';
 
 abstract class HabitEvent extends Equatable {
   const HabitEvent();
@@ -49,6 +50,15 @@ class SearchHabits extends HabitEvent {
   List<Object?> get props => [userId, query];
 }
 
+class DeleteHabit extends HabitEvent {
+  final int habitId;
+
+  const DeleteHabit(this.habitId);
+
+  @override
+  List<Object?> get props => [habitId];
+}
+
 abstract class HabitState extends Equatable {
   const HabitState();
 
@@ -87,6 +97,15 @@ class HabitCompleted extends HabitState {
   List<Object?> get props => [habit];
 }
 
+class HabitDeleted extends HabitState {
+  final int habitId;
+
+  const HabitDeleted(this.habitId);
+
+  @override
+  List<Object?> get props => [habitId];
+}
+
 class HabitFailure extends HabitState {
   final String message;
 
@@ -100,20 +119,23 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
   final CreateHabitUseCase _createHabitUseCase;
   final GetUserHabitsUseCase _getUserHabitsUseCase;
   final CompleteHabitUseCase _completeHabitUseCase;
+  final DeleteHabitUseCase _deleteHabitUseCase;
 
   HabitBloc({
     required CreateHabitUseCase createHabitUseCase,
     required GetUserHabitsUseCase getUserHabitsUseCase,
     required CompleteHabitUseCase completeHabitUseCase,
+    required DeleteHabitUseCase deleteHabitUseCase,
   })  : _createHabitUseCase = createHabitUseCase,
         _getUserHabitsUseCase = getUserHabitsUseCase,
         _completeHabitUseCase = completeHabitUseCase,
+        _deleteHabitUseCase = deleteHabitUseCase,
         super(HabitInitial()) {
-    // Register event handlers
-    on<LoadUserHabits>(_onLoadUserHabits);
-    on<CreateHabit>(_onCreateHabit);
-    on<CompleteHabit>(_onCompleteHabit);
-    on<SearchHabits>(_onSearchHabits);
+        on<LoadUserHabits>(_onLoadUserHabits);
+        on<CreateHabit>(_onCreateHabit);
+        on<CompleteHabit>(_onCompleteHabit);
+        on<SearchHabits>(_onSearchHabits);
+        on<DeleteHabit>(_onDeleteHabit);
   }
 
   Future<void> _onLoadUserHabits(LoadUserHabits event, Emitter<HabitState> emit) async {
@@ -124,13 +146,16 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       
       if (result.isLeft()) {
         final error = result.fold((l) => l, (r) => '');
+        print('HabitBloc: Error loading habits: $error');
         emit(HabitFailure(error));
         return;
       }
       
       final habits = result.fold((l) => <Habit>[], (r) => r);
+      print('HabitBloc: Successfully loaded ${habits.length} habits');
       emit(HabitSuccess(habits));
     } catch (e) {
+      print('HabitBloc: Exception loading habits: $e');
       emit(HabitFailure('Failed to load habits: $e'));
     }
   }
@@ -230,6 +255,25 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       }
     } catch (e) {
       emit(HabitFailure('Failed to search habits: $e'));
+    }
+  }
+
+  Future<void> _onDeleteHabit(DeleteHabit event, Emitter<HabitState> emit) async {
+    emit(HabitLoading());
+    
+    try {
+      final result = await _deleteHabitUseCase(event.habitId);
+      
+      if (result.isLeft()) {
+        final error = result.fold((l) => l, (r) => '');
+        emit(HabitFailure(error));
+        return;
+      }
+      
+      // Simply emit deleted state - let the UI handle refreshing
+      emit(HabitDeleted(event.habitId));
+    } catch (e) {
+      emit(HabitFailure('Failed to delete habit: $e'));
     }
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../injection/injection_container.dart' as di;
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/habit/habit_bloc.dart';
-import '../widgets/habit_card.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/loading_widget.dart';
@@ -41,19 +42,20 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, authState) {
             if (authState is AuthSuccess) {
-              return PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                children: [
-                  if (authState.user.id != null) _buildHabitsPage(authState.user.id!) else const Center(child: Text('User ID not available')),
-                  const HabitResultsPage(),
-                  const HabitInfoPage(),
-                ],
-              );
+                  return PageView(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                    children: [
+                      if (authState.user.id != null) _buildHabitsPage(authState.user.id!) else const Center(child: Text('User ID not available')),
+                      const HabitResultsPage(),
+                      const HabitInfoPage(),
+                      if (authState.user.id != null) _buildProfilePage(authState.user.id!) else const Center(child: Text('User ID not available')),
+                    ],
+                  );
             } else {
               return const Center(child: CircularProgressIndicator());
             }
@@ -61,43 +63,41 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          _pageController.animateToPage(
-            index,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        },
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+              _pageController.jumpToPage(index);
+            },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFF1E3A8A),
         unselectedItemColor: Colors.grey[600],
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
-            label: 'My Habits',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Results',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline),
-            label: 'Habit Info',
-          ),
-        ],
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.fitness_center),
+                label: 'My Habits',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.analytics),
+                label: 'Results',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.info_outline),
+                label: 'Habit Info',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
       ),
     );
   }
 
   Widget _buildHabitsPage(int userId) {
-    // Load user's habits when the page is first displayed
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Always load habits to ensure we have the latest data
       context.read<HabitBloc>().add(LoadUserHabits(userId));
     });
     
@@ -108,38 +108,39 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
           backgroundColor: const Color(0xFF1E3A8A),
           foregroundColor: Colors.white,
           elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () {
-                Navigator.pushNamed(context, '/profile');
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => _showLogoutConfirmation(context),
-            ),
-          ],
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () => _showLogoutConfirmation(context),
+                ),
+              ],
         ),
-        body: BlocBuilder<HabitBloc, HabitState>(
-        builder: (context, state) {
-          if (state is HabitLoading) {
-            return const LoadingWidget(message: 'Loading habits...');
-          } else if (state is HabitSuccess) {
-            return _buildHabitsList(context, state.habits);
-          } else if (state is HabitFailure) {
-            return CustomErrorWidget(
-              title: 'Failed to load habits',
-              message: state.message,
-              onRetry: () {
-                context.read<HabitBloc>().add(LoadUserHabits(userId));
+            body: BlocListener<HabitBloc, HabitState>(
+              listener: (context, state) {
+                if (state is HabitDeleted) {
+                  context.read<HabitBloc>().add(LoadUserHabits(userId));
+                }
               },
-            );
-          } else {
-            return const LoadingWidget();
-          }
-        },
-      ),
+              child: BlocBuilder<HabitBloc, HabitState>(
+                builder: (context, state) {
+                  if (state is HabitLoading) {
+                    return const LoadingWidget(message: 'Loading habits...');
+                  } else if (state is HabitSuccess) {
+                    return _buildHabitsList(context, state.habits);
+                  } else if (state is HabitFailure) {
+                    return CustomErrorWidget(
+                      title: 'Failed to load habits',
+                      message: state.message,
+                      onRetry: () {
+                        context.read<HabitBloc>().add(LoadUserHabits(userId));
+                      },
+                    );
+                  } else {
+                    return const LoadingWidget();
+                  }
+                },
+              ),
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push<bool>(
@@ -149,7 +150,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
             ),
           );
           
-          // If habit was created, refresh the habits list
           if (result == true) {
             context.read<HabitBloc>().add(LoadUserHabits(userId));
           }
@@ -162,56 +162,416 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
     );
   }
 
+  Widget _buildProfilePage(int userId) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        backgroundColor: const Color(0xFF1E3A8A),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _showLogoutConfirmation(context),
+          ),
+        ],
+      ),
+      body: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthSuccess) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 80,
+                          backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
+                          child: state.user.avatarPath != null && state.user.avatarPath!.isNotEmpty
+                              ? ClipOval(
+                                  child: Image.file(
+                                    File(state.user.avatarPath!),
+                                    width: 160,
+                                    height: 160,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  size: 80,
+                                  color: Color(0xFF1E3A8A),
+                                ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.user.username,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E3A8A),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          state.user.email,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () => _changeAvatar(context, state.user.id!),
+                          icon: const Icon(Icons.camera_alt, size: 16),
+                          label: const Text('Change Avatar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E3A8A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E3A8A).withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Account Information',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E3A8A),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInfoRow('User ID', state.user.id?.toString() ?? 'N/A'),
+                              const SizedBox(height: 12),
+                              _buildInfoRow('Username', state.user.username),
+                              const SizedBox(height: 12),
+                              _buildInfoRow('Email', state.user.email),
+                              const SizedBox(height: 12),
+                              _buildInfoRow('Account Created', '${state.user.createdAt.day}/${state.user.createdAt.month}/${state.user.createdAt.year}'),
+                              const SizedBox(height: 12),
+                              _buildInfoRow('Last Login', state.user.lastLoginAt != null 
+                                  ? '${state.user.lastLoginAt!.day}/${state.user.lastLoginAt!.month}/${state.user.lastLoginAt!.year}'
+                                  : 'Never'),
+                              const SizedBox(height: 12),
+                              _buildInfoRow('Avatar Status', state.user.avatarPath != null && state.user.avatarPath!.isNotEmpty 
+                                  ? 'Custom Avatar Set'
+                                  : 'Default Avatar'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    );
+  }
+
   Widget _buildHabitsList(BuildContext context, List<dynamic> habits) {
     if (habits.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return EmptyStateWidget(
+        icon: Icons.fitness_center,
+        title: 'No habits yet',
+        subtitle: 'Create your first habit to start tracking your progress',
+        buttonText: 'Create First Habit',
+        showButton: true,
+        onButtonPressed: () async {
+          final authState = context.read<AuthBloc>().state;
+          if (authState is AuthSuccess && authState.user.id != null) {
+            final result = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CreateHabitPage(userId: authState.user.id!),
+              ),
+            );
+            if (result == true) {
+              context.read<HabitBloc>().add(LoadUserHabits(authState.user.id!));
+            }
+          }
+        },
+      );
+    }
+
+        return Column(
           children: [
-            Icon(
-              Icons.fitness_center_outlined,
-              size: 80,
-              color: Colors.grey[300],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No habits yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
+            Container(
+              margin: const EdgeInsets.all(16),
+              child: SearchBarWidget(
+                hintText: 'Search habits...',
+                onChanged: (value) {
+                  if (habits.isNotEmpty) {
+                    context.read<HabitBloc>().add(SearchHabits(habits.first.userId, value));
+                  }
+                },
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Create your first habit to start tracking your progress',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final authState = context.read<AuthBloc>().state;
-                if (authState is AuthSuccess && authState.user.id != null) {
-                  final result = await Navigator.push<bool>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CreateHabitPage(userId: authState.user.id!),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: habits.length,
+                itemBuilder: (context, index) {
+                  final habit = habits[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E3A8A).withValues(alpha: 0.05),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                      Text(
+                                        habit.title,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1E3A8A),
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${habit.currentStreak}/${habit.targetDays} days',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => _showDeleteHabitDialog(context, habit),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 24,
+                                ),
+                                tooltip: 'Delete habit',
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Text(
+                                  habit.description,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.grey,
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              const SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        habit.category,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    _buildCompleteButton(context, habit),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   );
-                  
-                  // If habit was created, refresh the habits list
-                  if (result == true) {
-                    context.read<HabitBloc>().add(LoadUserHabits(authState.user.id!));
-                  }
-                }
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Create First Habit'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E3A8A),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                },
+              ),
+            ),
+          ],
+        );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          '$label:',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E3A8A),
+            ),
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _changeAvatar(BuildContext context, int userId) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 300,
+        maxHeight: 300,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        final Directory appDir = await getApplicationDocumentsDirectory();
+        final String fileName = 'avatar_$userId.jpg';
+        final String avatarPath = '${appDir.path}/$fileName';
+        final File avatarFile = File(avatarPath);
+        await avatarFile.writeAsBytes(await image.readAsBytes());
+        context.read<AuthBloc>().add(UpdateAvatarRequested(
+          userId: userId,
+          avatarPath: avatarPath,
+        ));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Avatar updated successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('Failed to update avatar: $e'),
+            ],
+          ),
+          backgroundColor: Colors.red[600],
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Widget _buildCompleteButton(BuildContext context, dynamic habit) {
+    final today = DateTime.now();
+    final lastCompleted = habit.lastCompletedAt;
+    final isCompletedToday = lastCompleted != null &&
+        lastCompleted.year == today.year &&
+        lastCompleted.month == today.month &&
+        lastCompleted.day == today.day;
+
+    if (isCompletedToday) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.green.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, size: 16, color: Colors.green[600]),
+            const SizedBox(width: 4),
+            Text(
+              'Completed',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.green[600],
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -219,46 +579,21 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       );
     }
 
-    return Column(
-      children: [
-        // Search Bar
-        Container(
-          margin: const EdgeInsets.all(16),
-          child: SearchBarWidget(
-            hintText: 'Search habits...',
-            onChanged: (value) {
-              // Trigger search when user types in the search field
-              if (habits.isNotEmpty) {
-                context.read<HabitBloc>().add(SearchHabits(habits.first.userId, value));
-              }
-            },
-          ),
+    return ElevatedButton.icon(
+      onPressed: () => _showCompleteHabitDialog(context, habit),
+      icon: const Icon(Icons.check, size: 14),
+      label: const Text('Complete'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF1E3A8A),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        // Habits List
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              if (habits.isNotEmpty) {
-                context.read<HabitBloc>().add(LoadUserHabits(habits.first.userId));
-              }
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: habits.length,
-              itemBuilder: (context, index) {
-                final habit = habits[index];
-                return HabitCard(
-                  habit: habit,
-                  onTap: () => _showCompleteHabitDialog(context, habit),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+        minimumSize: const Size(0, 32),
+      ),
     );
   }
-
 
   String _getStreakStatus(dynamic habit) {
     final daysSinceCreated = DateTime.now().difference(habit.createdAt).inDays;
@@ -292,6 +627,56 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         return Icons.fitness_center;
     }
   }
+
+  void _showDeleteHabitDialog(BuildContext context, dynamic habit) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('Delete "${habit.title}"'),
+          content: const Text('Are you sure you want to delete this habit? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                                        context.read<HabitBloc>().add(DeleteHabit(habit.id));
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Row(
+                          children: [
+                            Icon(Icons.delete_outline, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text('Habit deleted successfully'),
+                          ],
+                        ),
+                        backgroundColor: Colors.red[600],
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void _showCompleteHabitDialog(BuildContext context, dynamic habit) {
     showDialog(

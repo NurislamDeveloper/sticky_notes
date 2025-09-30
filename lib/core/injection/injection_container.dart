@@ -12,6 +12,8 @@ import '../domain/usecases/sign_in_usecase.dart';
 import '../domain/usecases/create_habit_usecase.dart';
 import '../domain/usecases/get_user_habits_usecase.dart';
 import '../domain/usecases/complete_habit_usecase.dart';
+import '../domain/usecases/delete_habit_usecase.dart';
+import '../domain/usecases/update_avatar_usecase.dart';
 import '../presentation/bloc/auth/auth_bloc.dart';
 import '../presentation/bloc/habit/habit_bloc.dart';
 
@@ -23,6 +25,7 @@ Future<void> init() async {
     () => AuthBloc(
       signUpUseCase: sl(),
       signInUseCase: sl(),
+      updateAvatarUseCase: sl(),
     ),
   );
 
@@ -31,6 +34,7 @@ Future<void> init() async {
       createHabitUseCase: sl(),
       getUserHabitsUseCase: sl(),
       completeHabitUseCase: sl(),
+      deleteHabitUseCase: sl(),
     ),
   );
 
@@ -40,6 +44,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CreateHabitUseCase(sl()));
   sl.registerLazySingleton(() => GetUserHabitsUseCase(sl()));
   sl.registerLazySingleton(() => CompleteHabitUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteHabitUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateAvatarUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(

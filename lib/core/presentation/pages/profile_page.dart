@@ -33,7 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (userModel?.avatarPath != null &&
             userModel!.avatarPath!.isNotEmpty) {
-          final avatarFile = File(userModel!.avatarPath!);
+          final avatarFile = File(userModel.avatarPath!);
           if (await avatarFile.exists()) {
             setState(() {
               _avatarImage = avatarFile;

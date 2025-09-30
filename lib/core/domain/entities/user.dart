@@ -6,6 +6,7 @@ class User extends Equatable {
   final String username;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
+  final String? avatarPath;
 
   const User({
     this.id,
@@ -13,10 +14,11 @@ class User extends Equatable {
     required this.username,
     required this.createdAt,
     this.lastLoginAt,
+    this.avatarPath,
   });
 
   @override
-  List<Object?> get props => [id, email, username, createdAt, lastLoginAt];
+  List<Object?> get props => [id, email, username, createdAt, lastLoginAt, avatarPath];
 
   User copyWith({
     int? id,
@@ -24,6 +26,7 @@ class User extends Equatable {
     String? username,
     DateTime? createdAt,
     DateTime? lastLoginAt,
+    String? avatarPath,
   }) {
     return User(
       id: id ?? this.id,
@@ -31,6 +34,7 @@ class User extends Equatable {
       username: username ?? this.username,
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
+      avatarPath: avatarPath ?? this.avatarPath,
     );
   }
 }

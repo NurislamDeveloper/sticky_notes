@@ -18,13 +18,6 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
   @override
   void initState() {
     super.initState();
-    // Load habits when the page is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState is AuthSuccess) {
-        context.read<HabitBloc>().add(LoadUserHabits(authState.user.id!));
-      }
-    });
   }
 
   @override

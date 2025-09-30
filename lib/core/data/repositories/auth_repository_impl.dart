@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:flutter/foundation.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -60,28 +59,18 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      debugPrint('Sign in attempt for email: $email');
-      
       if (!EmailValidator.validate(email)) {
-        debugPrint('Invalid email format: $email');
         return const Left('Please enter a valid email address');
       }
 
       final userModel = await _userLocalDataSource.getUserByEmail(email.toLowerCase().trim());
       if (userModel == null) {
-        debugPrint('User not found for email: $email');
         return const Left('Invalid email or password');
       }
 
-      debugPrint('User found: ${userModel.email}, ID: ${userModel.id}');
-      debugPrint('Stored password hash: ${userModel.passwordHash}');
-      debugPrint('Input password: $password');
-
       final isPasswordValid = await _passwordService.verifyPassword(password, userModel.passwordHash);
-      debugPrint('Password verification result: $isPasswordValid');
       
       if (!isPasswordValid) {
-        debugPrint('Password verification failed');
         return const Left('Invalid email or password');
       }
 

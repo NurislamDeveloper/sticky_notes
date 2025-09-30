@@ -59,6 +59,7 @@ class UserModel extends User {
       username: username,
       createdAt: createdAt,
       lastLoginAt: lastLoginAt,
+      avatarPath: avatarPath,
     );
   }
 

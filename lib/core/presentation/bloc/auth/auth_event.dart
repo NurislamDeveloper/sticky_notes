@@ -37,3 +37,16 @@ class SignInRequested extends AuthEvent {
 
 class SignOutRequested extends AuthEvent {}
 class CheckAuthStatus extends AuthEvent {}
+
+class UpdateAvatarRequested extends AuthEvent {
+  final int userId;
+  final String avatarPath;
+
+  const UpdateAvatarRequested({
+    required this.userId,
+    required this.avatarPath,
+  });
+
+  @override
+  List<Object> get props => [userId, avatarPath];
+}
