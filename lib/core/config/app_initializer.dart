@@ -3,17 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../injection/injection_container.dart' as di;
 import '../presentation/bloc/auth/auth_bloc.dart';
 import '../presentation/bloc/habit/habit_bloc.dart';
+import '../presentation/bloc/notification/notification_bloc.dart';
 import '../presentation/pages/auth_page.dart';
 import '../presentation/pages/home_page.dart';
+import '../services/simple_notification_service.dart';
 import 'app_theme.dart';
 import 'app_routes.dart';
-
+import 'app_config.dart';
 class AppInitializer {
   static Future<void> initialize() async {
     WidgetsFlutterBinding.ensureInitialized();
     await di.init();
+    await SimpleNotificationService().initialize();
   }
-  
   static Widget createApp() {
     return MultiBlocProvider(
       providers: [
@@ -23,9 +25,12 @@ class AppInitializer {
         BlocProvider(
           create: (context) => di.sl<HabitBloc>(),
         ),
+        BlocProvider(
+          create: (context) => di.sl<NotificationBloc>(),
+        ),
       ],
       child: MaterialApp(
-        title: 'Sticky Notes',
+        title: AppConfig.appName,
         theme: AppTheme.lightTheme,
         home: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {

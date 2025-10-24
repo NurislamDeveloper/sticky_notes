@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
   final Color color;
-
   const StatCard({
     super.key,
     required this.title,
@@ -13,7 +11,6 @@ class StatCard extends StatelessWidget {
     required this.icon,
     required this.color,
   });
-
   @override
   Widget build(BuildContext context) {
     return Card(

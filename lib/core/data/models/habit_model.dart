@@ -1,5 +1,4 @@
 import '../../domain/entities/habit.dart';
-
 class HabitModel extends Habit {
   const HabitModel({
     super.id,
@@ -16,7 +15,6 @@ class HabitModel extends Habit {
     super.color,
     super.icon,
   });
-
   factory HabitModel.fromEntity(Habit habit) {
     return HabitModel(
       id: habit.id,
@@ -34,7 +32,6 @@ class HabitModel extends Habit {
       icon: habit.icon,
     );
   }
-
   factory HabitModel.fromMap(Map<String, dynamic> map) {
     return HabitModel(
       id: map['id'] as int?,
@@ -54,7 +51,6 @@ class HabitModel extends Habit {
       icon: map['icon'] as String? ?? 'fitness_center',
     );
   }
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -72,7 +68,6 @@ class HabitModel extends Habit {
       'icon': icon,
     };
   }
-
   @override
   HabitModel copyWith({
     int? id,
@@ -106,7 +101,6 @@ class HabitModel extends Habit {
     );
   }
 }
-
 class HabitCompletionModel extends HabitCompletion {
   const HabitCompletionModel({
     super.id,
@@ -114,7 +108,6 @@ class HabitCompletionModel extends HabitCompletion {
     required super.completedAt,
     super.notes,
   });
-
   factory HabitCompletionModel.fromEntity(HabitCompletion completion) {
     return HabitCompletionModel(
       id: completion.id,
@@ -123,7 +116,6 @@ class HabitCompletionModel extends HabitCompletion {
       notes: completion.notes,
     );
   }
-
   factory HabitCompletionModel.fromMap(Map<String, dynamic> map) {
     return HabitCompletionModel(
       id: map['id'] as int?,
@@ -132,7 +124,6 @@ class HabitCompletionModel extends HabitCompletion {
       notes: map['notes'] as String?,
     );
   }
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -141,7 +132,6 @@ class HabitCompletionModel extends HabitCompletion {
       'notes': notes,
     };
   }
-
   HabitCompletionModel copyWith({
     int? id,
     int? habitId,

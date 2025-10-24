@@ -2,66 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
 import 'profile_page.dart';
-
 class StickyNotesPage extends StatefulWidget {
   const StickyNotesPage({super.key});
-
   @override
   State<StickyNotesPage> createState() => _StickyNotesPageState();
 }
-
 class _StickyNotesPageState extends State<StickyNotesPage>
     with TickerProviderStateMixin {
   late AnimationController _welcomeAnimationController;
   late AnimationController _contentAnimationController;
   late AnimationController _iconAnimationController;
-
   late Animation<double> _welcomeRotationAnimation;
   late Animation<double> _welcomeFadeAnimation;
   late Animation<double> _contentFadeAnimation;
   late Animation<Offset> _contentSlideAnimation;
   late Animation<double> _iconBounceAnimation;
-
   @override
   void initState() {
     super.initState();
-
     _welcomeAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-
     _contentAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-
     _iconAnimationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
     _welcomeRotationAnimation = Tween<double>(begin: -0.1, end: 0.0).animate(
       CurvedAnimation(
         parent: _welcomeAnimationController,
         curve: Curves.easeOut,
       ),
     );
-
     _welcomeFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _welcomeAnimationController,
         curve: Curves.easeOut,
       ),
     );
-
     _contentFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _contentAnimationController,
         curve: Curves.easeOut,
       ),
     );
-
     _contentSlideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
           CurvedAnimation(
@@ -69,35 +57,29 @@ class _StickyNotesPageState extends State<StickyNotesPage>
             curve: Curves.easeOutCubic,
           ),
         );
-
     _iconBounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _iconAnimationController,
         curve: Curves.elasticOut,
       ),
     );
-
     _welcomeAnimationController.forward();
-
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         _iconAnimationController.forward();
       }
     });
-
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         _contentAnimationController.forward();
       }
     });
-
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         _welcomeAnimationController.reverse();
       }
     });
   }
-
   @override
   void dispose() {
     _welcomeAnimationController.dispose();
@@ -105,7 +87,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
     _iconAnimationController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,7 +170,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
       ),
     );
   }
-
   Widget _buildWelcomeCardContent(BuildContext context, user) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -273,7 +253,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
       ),
     );
   }
-
   Widget _buildMainContent(BuildContext context, user) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -422,7 +401,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
       ),
     );
   }
-
   Widget _buildActionCard(
     BuildContext context,
     String title,
@@ -468,7 +446,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
       ),
     );
   }
-
   Widget _buildActivityItem(
     String title,
     String subtitle,
@@ -511,7 +488,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
       ),
     );
   }
-
   void _showComingSoon(BuildContext context, String feature) {
     showDialog(
       context: context,
@@ -529,7 +505,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
       ),
     );
   }
-
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
@@ -563,10 +538,8 @@ class _StickyNotesPageState extends State<StickyNotesPage>
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-
                 final authBloc = context.read<AuthBloc>();
                 final navigator = Navigator.of(context);
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Row(
@@ -581,7 +554,6 @@ class _StickyNotesPageState extends State<StickyNotesPage>
                     duration: const Duration(seconds: 2),
                   ),
                 );
-
                 Future.delayed(const Duration(milliseconds: 500), () {
                   authBloc.add(SignOutRequested());
                   navigator.pushReplacementNamed('/auth');

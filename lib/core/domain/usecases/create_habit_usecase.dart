@@ -1,12 +1,9 @@
 import 'package:dartz/dartz.dart';
 import '../entities/habit.dart';
 import '../repositories/habit_repository.dart';
-
 class CreateHabitUseCase {
   final HabitRepository _repository;
-
   CreateHabitUseCase(this._repository);
-
   Future<Either<String, Habit>> call(CreateHabitParams params) async {
     try {
       final habit = Habit(
@@ -19,14 +16,12 @@ class CreateHabitUseCase {
         color: params.color,
         icon: params.icon,
       );
-
       return await _repository.createHabit(habit);
     } catch (e) {
       return Left('Failed to create habit: $e');
     }
   }
 }
-
 class CreateHabitParams {
   final int userId;
   final String title;
@@ -35,7 +30,6 @@ class CreateHabitParams {
   final int targetDays;
   final String color;
   final String icon;
-
   CreateHabitParams({
     required this.userId,
     required this.title,

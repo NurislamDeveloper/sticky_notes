@@ -8,26 +8,23 @@ import '../widgets/stat_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/empty_state_widget.dart';
-
 class HabitResultsPage extends StatefulWidget {
   const HabitResultsPage({super.key});
-
   @override
   State<HabitResultsPage> createState() => _HabitResultsPageState();
 }
-
 class _HabitResultsPageState extends State<HabitResultsPage> {
   @override
   void initState() {
     super.initState();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text('Habit Results'),
+        centerTitle: true,
         backgroundColor: const Color(0xFF1E3A8A),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -57,7 +54,6 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
       ),
     );
   }
-
   Widget _buildResultsContent(List<dynamic> habits) {
     if (habits.isEmpty) {
       return EmptyStateWidget(
@@ -67,8 +63,6 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
         showButton: false,
       );
     }
-
-    // Calculate essential stats only
     final totalHabits = habits.length;
     final activeHabits = habits.where((habit) => habit.isActive).length;
     final completedToday = habits.where((habit) {
@@ -76,13 +70,11 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
           DateTime.now().difference(habit.lastCompletedAt).inDays == 0;
     }).length;
     final totalStreakDays = habits.fold<int>(0, (sum, habit) => sum + habit.currentStreak as int);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -130,8 +122,6 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
             ),
           ),
           const SizedBox(height: 24),
-          
-          // Essential Stats Only
           Text(
             'Overview',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -140,8 +130,6 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
             ),
           ),
           const SizedBox(height: 16),
-          
-          // Stats Grid - Fixed layout
           Column(
             children: [
               Row(
@@ -189,10 +177,7 @@ class _HabitResultsPageState extends State<HabitResultsPage> {
               ),
             ],
           ),
-          
           const SizedBox(height: 24),
-          
-          // Simple Progress Message
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),

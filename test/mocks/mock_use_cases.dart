@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:sticky_notes/core/domain/entities/auth_result.dart';
-import 'package:sticky_notes/core/domain/entities/user.dart';
-import 'package:sticky_notes/core/domain/usecases/sign_up_usecase.dart';
-import 'package:sticky_notes/core/domain/usecases/sign_in_usecase.dart';
+import 'package:noteflow/core/domain/entities/auth_result.dart';
+import 'package:noteflow/core/domain/entities/user.dart';
+import 'package:noteflow/core/domain/usecases/sign_up_usecase.dart';
+import 'package:noteflow/core/domain/usecases/sign_in_usecase.dart';
 
 class MockSignUpUseCase implements SignUpUseCase {
   @override

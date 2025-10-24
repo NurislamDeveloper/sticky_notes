@@ -1,24 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../domain/entities/habit.dart';
-
 class HabitCard extends StatelessWidget {
   final Habit habit;
   final VoidCallback onTap;
-
   const HabitCard({
     super.key,
     required this.habit,
     required this.onTap,
   });
-
   @override
   Widget build(BuildContext context) {
     final daysSinceCreated = DateTime.now().difference(habit.createdAt).inDays;
     final completionRate = daysSinceCreated > 0
         ? (habit.currentStreak / daysSinceCreated * 100).clamp(0.0, 100.0)
         : 0.0;
-
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -117,7 +113,6 @@ class HabitCard extends StatelessWidget {
       ),
     );
   }
-
   String _getStreakStatus(Habit habit) {
     if (habit.currentStreak >= habit.targetDays) {
       return 'Goal Achieved!';
@@ -127,10 +122,8 @@ class HabitCard extends StatelessWidget {
       return 'Start Today!';
     }
   }
-
   Color _parseColor(String colorString) {
     try {
-      // Handle hex color strings like "#FF0000" or "FF0000"
       String cleanColor = colorString.replaceAll('#', '');
       if (cleanColor.length == 6) {
         return Color(int.parse('FF$cleanColor', radix: 16));
@@ -138,12 +131,10 @@ class HabitCard extends StatelessWidget {
         return Color(int.parse(cleanColor, radix: 16));
       }
     } catch (e) {
-      // If parsing fails, return a default color
       debugPrint('Error parsing color: $colorString, error: $e');
     }
-    return const Color(0xFF3B82F6); // Default blue color
+    return const Color(0xFF3B82F6); 
   }
-
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'fitness_center':

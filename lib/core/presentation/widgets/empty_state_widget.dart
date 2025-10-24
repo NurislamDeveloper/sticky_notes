@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -7,7 +6,6 @@ class EmptyStateWidget extends StatelessWidget {
   final String buttonText;
   final VoidCallback? onButtonPressed;
   final bool showButton;
-
   const EmptyStateWidget({
     super.key,
     required this.icon,
@@ -17,7 +15,6 @@ class EmptyStateWidget extends StatelessWidget {
     this.onButtonPressed,
     this.showButton = false,
   });
-
   @override
   Widget build(BuildContext context) {
     return Center(

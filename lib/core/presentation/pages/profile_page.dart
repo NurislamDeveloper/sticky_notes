@@ -8,29 +8,23 @@ import '../../domain/entities/user.dart';
 import '../../injection/injection_container.dart' as di;
 import '../../domain/repositories/auth_repository.dart';
 import '../../data/datasources/user_local_datasource.dart';
-
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
-
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
-
 class _ProfilePageState extends State<ProfilePage> {
   File? _avatarImage;
   final ImagePicker _picker = ImagePicker();
-
   @override
   void initState() {
     super.initState();
   }
-
   Future<void> _loadAvatar(User user) async {
     if (user.id != null) {
       try {
         final userDataSource = di.sl<UserLocalDataSource>();
         final userModel = await userDataSource.getUserById(user.id!);
-
         if (userModel?.avatarPath != null &&
             userModel!.avatarPath!.isNotEmpty) {
           final avatarFile = File(userModel.avatarPath!);
@@ -45,7 +39,6 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
-
   Future<void> _pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -54,14 +47,12 @@ class _ProfilePageState extends State<ProfilePage> {
         maxHeight: 400,
         imageQuality: 85,
       );
-      
       if (image != null && mounted) {
         await _saveAvatarImage(image);
       }
     } catch (e) {
       if (mounted) {
         String errorMessage = 'Error picking image';
-        
         if (e.toString().contains('channel-error')) {
           errorMessage = 'Image picker not available in simulator. Please test on a real device.';
         } else if (e.toString().contains('Permission denied')) {
@@ -73,7 +64,6 @@ class _ProfilePageState extends State<ProfilePage> {
         } else {
           errorMessage = 'Error picking image: ${e.toString()}';
         }
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -84,19 +74,15 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
-
   Future<void> _saveAvatarImage(XFile image) async {
     try {
       final authBloc = context.read<AuthBloc>();
       final scaffoldMessenger = ScaffoldMessenger.of(context);
-      
       final Directory appDir = await getApplicationDocumentsDirectory();
       final String fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final String avatarPath = '${appDir.path}/$fileName';
-      
       final File avatarFile = File(image.path);
       await avatarFile.copy(avatarPath);
-      
       final authState = authBloc.state;
       if (authState is AuthSuccess && authState.user.id != null) {
         final authRepository = di.sl<AuthRepository>();
@@ -104,7 +90,6 @@ class _ProfilePageState extends State<ProfilePage> {
           userId: authState.user.id!,
           avatarPath: avatarPath,
         );
-
         result.fold(
           (error) {
             if (mounted) {
@@ -151,13 +136,13 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Profile'),
+        centerTitle: true,
         backgroundColor: const Color(0xFF1E3A8A),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -182,7 +167,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
   Widget _buildProfileContent(BuildContext context, User user) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -406,7 +390,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: const Color(0xFF1E3A8A),
                   ),
                 ),
-
                 const SizedBox(height: 20),
                 _buildInfoRow(
                   context,
@@ -414,10 +397,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   user.email,
                   Icons.email,
                 ),
-
                 const Divider(height: 24),
                 _buildInfoRow(context, 'Username', user.username, Icons.person),
-
                 const Divider(height: 24),
                 _buildInfoRow(
                   context,
@@ -425,7 +406,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   _formatDateTime(user.createdAt),
                   Icons.calendar_today,
                 ),
-
                 if (user.lastLoginAt != null) ...[
                   const Divider(height: 24),
                   _buildInfoRow(
@@ -480,7 +460,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
   Widget _buildInfoRow(
     BuildContext context,
     String label,
@@ -523,7 +502,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     );
   }
-
   String _formatDate(DateTime date) {
     final months = [
       'Jan',
@@ -541,11 +519,9 @@ class _ProfilePageState extends State<ProfilePage> {
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
-
   String _formatDateTime(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
-
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,

@@ -1,5 +1,5 @@
-name: sticky_notes
-description: "Sticky Notes App - Clean Architecture with Authentication"
+name: noteflow
+description: "NoteFlow - Smart Notes & Habits App"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -56,6 +56,16 @@ dependencies:
   # Path provider for saving images
   path_provider: ^2.1.2
   
+  # Notifications
+  flutter_local_notifications: ^17.2.4
+  permission_handler: ^11.4.0
+  timezone: ^0.9.4
+  
+  # AI & Voice Recognition
+  # speech_to_text: ^6.6.0  # Temporarily disabled due to compatibility issues
+  # record: ^5.1.0  # Disabled due to platform compatibility
+  http: ^1.2.2
+  
   # Utilities
   equatable: ^2.0.5
   dartz: ^0.10.1
@@ -64,12 +74,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  
+  # Testing
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
+  
+  # App Icon Generation
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -112,3 +124,22 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# App Icon Configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    background_color: "#00BFFF"
+    theme_color: "#4B0082"
+  windows:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"

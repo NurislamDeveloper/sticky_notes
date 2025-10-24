@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-
+import '../widgets/collapsible_widgets.dart';
+import '../../constants/app_strings.dart';
+import '../../config/app_config.dart';
 class HabitInfoPage extends StatelessWidget {
   const HabitInfoPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Habit Guide'),
-        backgroundColor: const Color(0xFF1E3A8A),
+        title: const Text(AppStrings.habitGuide),
+        backgroundColor: AppConfig.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -20,18 +22,27 @@ class HabitInfoPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildWelcomeCard(),
-            const SizedBox(height: 24),
-            _buildAtomicHabitsSection(),
-            const SizedBox(height: 24),
-            _buildHabitFormationSection(),
-            const SizedBox(height: 24),
-            _buildTipsSection(),
+            CollapsibleSection(
+              title: 'Atomic Habits Principles',
+              icon: Icons.science,
+              initiallyExpanded: false,
+              content: _buildAtomicHabitsSection(),
+            ),
+            CollapsibleSection(
+              title: 'Habit Formation Process',
+              icon: Icons.trending_up,
+              content: _buildHabitFormationSection(),
+            ),
+            CollapsibleSection(
+              title: 'Pro Tips & Strategies',
+              icon: Icons.lightbulb,
+              content: _buildTipsSection(),
+            ),
           ],
         ),
       ),
     );
   }
-
   Widget _buildWelcomeCard() {
     return Container(
       width: double.infinity,
@@ -80,7 +91,6 @@ class HabitInfoPage extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildAtomicHabitsSection() {
     return _buildInfoCard(
       title: 'Atomic Habits Principles',
@@ -110,7 +120,6 @@ class HabitInfoPage extends StatelessWidget {
       ],
     );
   }
-
   Widget _buildHabitFormationSection() {
     return _buildInfoCard(
       title: 'The Habit Loop',
@@ -140,7 +149,6 @@ class HabitInfoPage extends StatelessWidget {
       ],
     );
   }
-
   Widget _buildTipsSection() {
     return _buildInfoCard(
       title: 'Pro Tips',
@@ -170,7 +178,6 @@ class HabitInfoPage extends StatelessWidget {
       ],
     );
   }
-
   Widget _buildInfoCard({
     required String title,
     required IconData icon,
@@ -227,7 +234,6 @@ class HabitInfoPage extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildInfoItem(String title, String description, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),

@@ -1,9 +1,7 @@
 import '../../domain/entities/user.dart';
-
 class UserModel extends User {
   final String passwordHash;
   final String? avatarPath;
-
   const UserModel({
     super.id,
     required super.email,
@@ -13,7 +11,6 @@ class UserModel extends User {
     required this.passwordHash,
     this.avatarPath,
   });
-
   factory UserModel.fromEntity(User user, String passwordHash, {String? avatarPath}) {
     return UserModel(
       id: user.id,
@@ -25,7 +22,6 @@ class UserModel extends User {
       avatarPath: avatarPath,
     );
   }
-
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       id: map['id'] as int?,
@@ -39,7 +35,6 @@ class UserModel extends User {
       avatarPath: map['avatar_path'] as String?,
     );
   }
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -51,7 +46,6 @@ class UserModel extends User {
       'last_login_at': lastLoginAt?.millisecondsSinceEpoch,
     };
   }
-
   User toEntity() {
     return User(
       id: id,
@@ -62,7 +56,6 @@ class UserModel extends User {
       avatarPath: avatarPath,
     );
   }
-
   @override
   UserModel copyWith({
     int? id,

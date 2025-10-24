@@ -1,18 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
+import '../bloc/notification/notification_bloc.dart';
+import '../bloc/notification/notification_event.dart';
+import '../../config/app_config.dart';
 import 'habit_tracking_page.dart';
-
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+  void _loadNotificationSettings() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthSuccess) {
+      print('🔔 HomePage: Loading notification settings for user ${authState.user.id}');
+      context.read<NotificationBloc>().add(
+        LoadNotificationSettings(authState.user.id!),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Habit Tracker'),
-        backgroundColor: const Color(0xFF1E3A8A),
+        title: Text(
+          AppConfig.appName,
+
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+          
+        ),
+        centerTitle: true,
+        backgroundColor: AppConfig.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -36,9 +68,9 @@ class HomePage extends StatelessWidget {
           }
         },
       ),
+      )
     );
   }
-
   Widget _buildWelcomeContent(BuildContext context, user) {
     return Center(
       child: Column(

@@ -3,12 +3,9 @@ import '../../domain/entities/habit.dart';
 import '../../domain/repositories/habit_repository.dart';
 import '../datasources/habit_local_datasource.dart';
 import '../models/habit_model.dart';
-
 class HabitRepositoryImpl implements HabitRepository {
   final HabitLocalDataSource _localDataSource;
-
   HabitRepositoryImpl(this._localDataSource);
-
   @override
   Future<Either<String, List<Habit>>> getUserHabits(int userId) async {
     try {
@@ -18,7 +15,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to get user habits: $e');
     }
   }
-
   @override
   Future<Either<String, Habit>> createHabit(Habit habit) async {
     try {
@@ -29,7 +25,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to create habit: $e');
     }
   }
-
   @override
   Future<Either<String, Habit>> updateHabit(Habit habit) async {
     try {
@@ -40,7 +35,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to update habit: $e');
     }
   }
-
   @override
   Future<Either<String, void>> deleteHabit(int habitId) async {
     try {
@@ -50,7 +44,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to delete habit: $e');
     }
   }
-
   @override
   Future<Either<String, Habit>> completeHabit(int habitId) async {
     try {
@@ -60,7 +53,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to complete habit: $e');
     }
   }
-
   @override
   Future<Either<String, List<Habit>>> searchHabits(int userId, String query) async {
     try {
@@ -70,7 +62,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to search habits: $e');
     }
   }
-
   @override
   Future<Either<String, List<HabitCompletion>>> getHabitCompletions(int habitId) async {
     try {
@@ -80,7 +71,6 @@ class HabitRepositoryImpl implements HabitRepository {
       return Left('Failed to get habit completions: $e');
     }
   }
-
   @override
   Future<Either<String, HabitCompletion>> addHabitCompletion(HabitCompletion completion) async {
     try {

@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../widgets/auth_form.dart';
+import '../../config/app_config.dart';
 import 'habit_tracking_page.dart';
-
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
-
   @override
   State<AuthPage> createState() => _AuthPageState();
 }
-
 class _AuthPageState extends State<AuthPage> {
   bool _isSignUp = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,24 +57,18 @@ class _AuthPageState extends State<AuthPage> {
                   ),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.sticky_note_2,
-                        size: _isSignUp ? 40 : 60,
-                        color: Colors.white,
+                      Text(
+                        AppConfig.appName,
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: _isSignUp ? 24 : 32,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                       SizedBox(height: _isSignUp ? 8 : 16),
                       Text(
-                        'Sticky Notes',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                          fontSize: _isSignUp ? 24 : 28,
-                        ),
-                      ),
-                      SizedBox(height: _isSignUp ? 4 : 8),
-                      Text(
-                        'Organize your thoughts, build better habits',
+                        AppConfig.appTagline,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: _isSignUp ? 12 : 14,

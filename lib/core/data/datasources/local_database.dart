@@ -1,15 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-
 class LocalDatabase {
   static final LocalDatabase _instance = LocalDatabase._internal();
   static Database? _database;
-
   LocalDatabase._internal();
-
   factory LocalDatabase() => _instance;
-
   Future<Database> get database async {
     if (_database != null) return _database!;
     try {
@@ -22,17 +18,15 @@ class LocalDatabase {
       return _database!;
     }
   }
-
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'sticky_notes.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
   }
-
   Future<void> _onCreate(Database db, int version) async {
       await db.execute('''
         CREATE TABLE users (
@@ -45,7 +39,6 @@ class LocalDatabase {
           last_login_at INTEGER
         )
       ''');
-
     await db.execute('''
       CREATE TABLE habits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,7 +57,6 @@ class LocalDatabase {
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
-
     await db.execute('''
       CREATE TABLE habit_completions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,14 +66,33 @@ class LocalDatabase {
         FOREIGN KEY (habit_id) REFERENCES habits (id) ON DELETE CASCADE
       )
     ''');
-
+    await db.execute('''
+      CREATE TABLE notification_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        is_enabled INTEGER DEFAULT 1,
+        reminder_time TEXT DEFAULT '09:00',
+        daily_reminders INTEGER DEFAULT 1,
+        weekly_reports INTEGER DEFAULT 1,
+        streak_reminders INTEGER DEFAULT 1,
+        achievement_notifications INTEGER DEFAULT 1,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE current_user (
+        user_id INTEGER NOT NULL,
+        PRIMARY KEY (user_id),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''');
     await db.execute('CREATE INDEX idx_users_email ON users(email)');
     await db.execute('CREATE INDEX idx_users_username ON users(username)');
     await db.execute('CREATE INDEX idx_habits_user_id ON habits(user_id)');
     await db.execute('CREATE INDEX idx_habits_category ON habits(category)');
     await db.execute('CREATE INDEX idx_habit_completions_habit_id ON habit_completions(habit_id)');
+    await db.execute('CREATE INDEX idx_notification_settings_user_id ON notification_settings(user_id)');
   }
-
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       try {
@@ -91,7 +102,6 @@ class LocalDatabase {
         debugPrint('Error adding avatar_path column: $e');
       }
     }
-    
     if (oldVersion < 3) {
       try {
         await db.execute('''
@@ -112,7 +122,6 @@ class LocalDatabase {
             FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
           )
         ''');
-        
         await db.execute('''
           CREATE TABLE habit_completions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,24 +131,55 @@ class LocalDatabase {
             FOREIGN KEY (habit_id) REFERENCES habits (id) ON DELETE CASCADE
           )
         ''');
-        
         await db.execute('CREATE INDEX idx_habits_user_id ON habits(user_id)');
         await db.execute('CREATE INDEX idx_habits_category ON habits(category)');
         await db.execute('CREATE INDEX idx_habit_completions_habit_id ON habit_completions(habit_id)');
-        
         debugPrint('Added habits and habit_completions tables');
       } catch (e) {
         debugPrint('Error adding habits tables: $e');
       }
     }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('''
+          CREATE TABLE notification_settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            is_enabled INTEGER DEFAULT 1,
+            reminder_time TEXT DEFAULT '09:00',
+            daily_reminders INTEGER DEFAULT 1,
+            weekly_reports INTEGER DEFAULT 1,
+            streak_reminders INTEGER DEFAULT 1,
+            achievement_notifications INTEGER DEFAULT 1,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+          )
+        ''');
+        await db.execute('CREATE INDEX idx_notification_settings_user_id ON notification_settings(user_id)');
+        debugPrint('Added notification_settings table');
+      } catch (e) {
+        debugPrint('Error adding notification_settings table: $e');
+      }
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('''
+          CREATE TABLE current_user (
+            user_id INTEGER NOT NULL,
+            PRIMARY KEY (user_id),
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+          )
+        ''');
+        debugPrint('Added current_user table');
+      } catch (e) {
+        debugPrint('Error adding current_user table: $e');
+      }
+    }
   }
-
   Future<void> _ensureAvatarPathColumn() async {
     try {
       final db = await database;
       final result = await db.rawQuery('PRAGMA table_info(users)');
       final hasAvatarPath = result.any((column) => column['name'] == 'avatar_path');
-      
       if (!hasAvatarPath) {
         await db.execute('ALTER TABLE users ADD COLUMN avatar_path TEXT');
         debugPrint('Added missing avatar_path column to users table');
@@ -148,7 +188,6 @@ class LocalDatabase {
       debugPrint('Error ensuring avatar_path column: $e');
     }
   }
-
   Future<void> close() async {
     final db = _database;
     if (db != null) {
@@ -156,7 +195,6 @@ class LocalDatabase {
       _database = null;
     }
   }
-
   Future<void> clearAllData() async {
     try {
       final db = await database;
@@ -167,7 +205,6 @@ class LocalDatabase {
       await recreateDatabase();
     }
   }
-
   Future<void> deleteDatabase() async {
     try {
       final db = _database;
@@ -175,7 +212,6 @@ class LocalDatabase {
         await db.close();
         _database = null;
       }
-      
       final databasesPath = await getDatabasesPath();
       final path = join(databasesPath, 'sticky_notes.db');
       await databaseFactory.deleteDatabase(path);
@@ -184,7 +220,6 @@ class LocalDatabase {
       debugPrint('Error deleting database: $e');
     }
   }
-
   Future<void> recreateDatabase() async {
     try {
       final db = _database;
@@ -192,9 +227,7 @@ class LocalDatabase {
         await db.close();
         _database = null;
       }
-      
       await deleteDatabase();
-      
       _database = await _initDatabase();
       debugPrint('Database recreated successfully');
     } catch (e) {

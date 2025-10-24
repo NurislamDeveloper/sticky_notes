@@ -49,5 +49,9 @@
 	<string>This app needs access to camera to take photos for your profile avatar.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to photo library to select photos for your profile avatar.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to microphone for voice input to create habits using AI.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>This app needs permission to send you notifications about your habits and reminders.</string>
 </dict>
 </plist>

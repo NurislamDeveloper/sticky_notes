@@ -11,36 +11,38 @@ import '../widgets/search_bar_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
+import '../widgets/collapsible_widgets.dart';
+import '../../constants/app_strings.dart';
+import '../../config/app_config.dart';
 import 'create_habit_page.dart';
 import 'habit_results_page.dart';
 import 'habit_info_page.dart';
-
+import 'notification_settings_page.dart';
 class HabitTrackingPage extends StatefulWidget {
   const HabitTrackingPage({super.key});
-
   @override
   State<HabitTrackingPage> createState() => _HabitTrackingPageState();
 }
-
 class _HabitTrackingPageState extends State<HabitTrackingPage> {
   int _currentIndex = 0;
   late PageController _pageController;
-
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
   }
-
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, authState) {
             if (authState is AuthSuccess) {
@@ -95,27 +97,21 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
               ),
             ],
       ),
+      ),
     );
   }
-
   Widget _buildHabitsPage(int userId) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HabitBloc>().add(LoadUserHabits(userId));
     });
-    
     return Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
-          title: const Text('My Habits'),
-          backgroundColor: const Color(0xFF1E3A8A),
+          title: const Text(AppStrings.myHabits),
+          backgroundColor: AppConfig.primaryColor,
           foregroundColor: Colors.white,
           elevation: 0,
-              // actions: [
-              //   IconButton(
-              //     icon: const Icon(Icons.logout),
-              //     onPressed: () => _showLogoutConfirmation(context),
-              //   ),
-              // ],
+          centerTitle: true,
         ),
             body: BlocListener<HabitBloc, HabitState>(
               listener: (context, state) {
@@ -151,7 +147,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
               builder: (context) => CreateHabitPage(userId: userId),
             ),
           );
-          
           if (result == true) {
             context.read<HabitBloc>().add(LoadUserHabits(userId));
           }
@@ -163,16 +158,16 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   Widget _buildProfilePage(int userId) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: const Color(0xFF1E3A8A),
+        title: const Text(AppStrings.profile),
+        backgroundColor: AppConfig.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        centerTitle: true,
       ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
@@ -182,12 +177,26 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
               child: Column(
                 children: [
                   _buildProfileCard(state.user),
-                  const SizedBox(height: 16),
-                  _buildUserInfoCard(state.user),
-                  const SizedBox(height: 16),
-                  _buildAccountInfoCard(state.user),
-                  const SizedBox(height: 16),
-                  _buildLogoutCard(context),
+                  CollapsibleSection(
+                    title: 'User Details',
+                    icon: Icons.info,
+                    content: _buildUserInfoCard(state.user),
+                  ),
+                  CollapsibleSection(
+                    title: 'Account Information',
+                    icon: Icons.account_circle,
+                    content: _buildAccountInfoCard(state.user),
+                  ),
+                  CollapsibleSection(
+                    title: 'Notification Settings',
+                    icon: Icons.notifications,
+                    content: _buildNotificationSettingsCard(context, state.user.id!),
+                  ),
+                  CollapsibleSection(
+                    title: 'Account Actions',
+                    icon: Icons.logout,
+                    content: _buildLogoutCard(context),
+                  ),
                 ],
               ),
             );
@@ -198,7 +207,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   Widget _buildHabitsList(BuildContext context, List<dynamic> habits) {
     if (habits.isEmpty) {
       return EmptyStateWidget(
@@ -223,7 +231,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         },
       );
     }
-
         return Column(
           children: [
             Container(
@@ -357,7 +364,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
           ],
         );
   }
-
   Widget _buildProfileCard(dynamic user) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -414,7 +420,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   Widget _buildUserInfoCard(dynamic user) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -450,7 +455,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   Widget _buildAccountInfoCard(dynamic user) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -488,7 +492,59 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
+  Widget _buildNotificationSettingsCard(BuildContext context, int userId) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Notifications',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationSettingsPage(userId: userId),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.notifications),
+              label: const Text('Notification Settings'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3A8A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildLogoutCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -535,20 +591,16 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   String _getAvatarStatus(String? avatarPath) {
     if (avatarPath == null || avatarPath.isEmpty) {
       return 'Default Avatar';
     }
-
     final File avatarFile = File(avatarPath);
     if (!avatarFile.existsSync()) {
       return 'Avatar File Missing';
     }
-
     return 'Custom Avatar Set';
   }
-
   Widget _buildAvatarImage(String? avatarPath) {
     if (avatarPath == null || avatarPath.isEmpty) {
       return const Icon(
@@ -557,7 +609,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         color: Color(0xFF1E3A8A),
       );
     }
-
     final File avatarFile = File(avatarPath);
     if (!avatarFile.existsSync()) {
       return const Icon(
@@ -566,7 +617,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         color: Color(0xFF1E3A8A),
       );
     }
-
     return ClipOval(
       child: Image.file(
         avatarFile,
@@ -583,7 +633,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   Widget _buildInfoRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -611,7 +660,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ],
     );
   }
-
   Future<void> _changeAvatar(BuildContext context, int userId) async {
     try {
       final ImagePicker picker = ImagePicker();
@@ -621,26 +669,20 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         maxHeight: 300,
         imageQuality: 80,
       );
-
       if (image != null) {
         final Directory appDir = await getApplicationDocumentsDirectory();
         final String fileName = 'avatar_$userId.jpg';
         final String avatarPath = '${appDir.path}/$fileName';
-        
         final File avatarFile = File(avatarPath);
-        
         if (avatarFile.existsSync()) {
           await avatarFile.delete();
         }
-        
         await avatarFile.writeAsBytes(await image.readAsBytes());
-        
         if (avatarFile.existsSync()) {
           context.read<AuthBloc>().add(UpdateAvatarRequested(
             userId: userId,
             avatarPath: avatarPath,
           ));
-
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Row(
@@ -676,7 +718,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       );
     }
   }
-
   Widget _buildCompleteButton(BuildContext context, dynamic habit) {
     final today = DateTime.now();
     final lastCompleted = habit.lastCompletedAt;
@@ -684,7 +725,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         lastCompleted.year == today.year &&
         lastCompleted.month == today.month &&
         lastCompleted.day == today.day;
-
     if (isCompletedToday) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -710,7 +750,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
         ),
       );
     }
-
     return ElevatedButton.icon(
       onPressed: () => _showCompleteHabitDialog(context, habit),
       icon: const Icon(Icons.check, size: 14),
@@ -726,40 +765,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
-  String _getStreakStatus(dynamic habit) {
-    final daysSinceCreated = DateTime.now().difference(habit.createdAt).inDays;
-    final completionRate = daysSinceCreated > 0 ? habit.currentStreak / daysSinceCreated : 0.0;
-    
-    if (completionRate >= 0.8) return 'excellent';
-    if (completionRate >= 0.6) return 'good';
-    if (completionRate >= 0.3) return 'needs_work';
-    return 'just_started';
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'fitness_center':
-        return Icons.fitness_center;
-      case 'book':
-        return Icons.book;
-      case 'water_drop':
-        return Icons.water_drop;
-      case 'bedtime':
-        return Icons.bedtime;
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'home':
-        return Icons.home;
-      default:
-        return Icons.fitness_center;
-    }
-  }
-
   void _showDeleteHabitDialog(BuildContext context, dynamic habit) {
     showDialog(
       context: context,
@@ -778,7 +783,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                                         context.read<HabitBloc>().add(DeleteHabit(habit.id));
-                    
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Row(
@@ -808,8 +812,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       },
     );
   }
-
-
   void _showCompleteHabitDialog(BuildContext context, dynamic habit) {
     showDialog(
       context: context,
@@ -847,7 +849,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
             onPressed: () {
               Navigator.of(context).pop();
               context.read<HabitBloc>().add(CompleteHabit(habit.id));
-              
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Row(
@@ -879,7 +880,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
       ),
     );
   }
-
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
@@ -913,10 +913,8 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-
                 final authBloc = context.read<AuthBloc>();
                 final navigator = Navigator.of(context);
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Row(
@@ -931,7 +929,6 @@ class _HabitTrackingPageState extends State<HabitTrackingPage> {
                     duration: const Duration(seconds: 2),
                   ),
                 );
-
                 Future.delayed(const Duration(milliseconds: 500), () {
                   authBloc.add(SignOutRequested());
                   navigator.pushReplacementNamed('/auth');

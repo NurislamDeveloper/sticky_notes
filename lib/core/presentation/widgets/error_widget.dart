@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
 class CustomErrorWidget extends StatelessWidget {
   final String title;
   final String message;
   final String buttonText;
   final VoidCallback? onRetry;
-
   const CustomErrorWidget({
     super.key,
     required this.title,
@@ -13,7 +11,6 @@ class CustomErrorWidget extends StatelessWidget {
     this.buttonText = 'Retry',
     this.onRetry,
   });
-
   @override
   Widget build(BuildContext context) {
     return Center(

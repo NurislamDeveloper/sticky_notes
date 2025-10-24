@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-
 class Habit extends Equatable {
   final int? id;
   final int userId;
@@ -14,7 +13,6 @@ class Habit extends Equatable {
   final bool isActive;
   final String color;
   final String icon;
-
   const Habit({
     this.id,
     required this.userId,
@@ -30,7 +28,6 @@ class Habit extends Equatable {
     this.color = '#3B82F6',
     this.icon = 'fitness_center',
   });
-
   @override
   List<Object?> get props => [
         id,
@@ -47,7 +44,6 @@ class Habit extends Equatable {
         color,
         icon,
       ];
-
   Habit copyWith({
     int? id,
     int? userId,
@@ -80,38 +76,31 @@ class Habit extends Equatable {
     );
   }
 }
-
 class HabitCompletion extends Equatable {
   final int? id;
   final int habitId;
   final DateTime completedAt;
   final String? notes;
-
   const HabitCompletion({
     this.id,
     required this.habitId,
     required this.completedAt,
     this.notes,
   });
-
   @override
   List<Object?> get props => [id, habitId, completedAt, notes];
 }
-
 class HabitRule extends Equatable {
   final String title;
   final String description;
   final bool isAccepted;
-
   const HabitRule({
     required this.title,
     required this.description,
     this.isAccepted = false,
   });
-
   @override
   List<Object?> get props => [title, description, isAccepted];
-
   HabitRule copyWith({
     String? title,
     String? description,

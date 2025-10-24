@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
 class HabitInfoItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
   final Color? valueColor;
-
   const HabitInfoItem({
     super.key,
     required this.icon,
@@ -13,7 +11,6 @@ class HabitInfoItem extends StatelessWidget {
     required this.value,
     this.valueColor,
   });
-
   @override
   Widget build(BuildContext context) {
     return Padding(

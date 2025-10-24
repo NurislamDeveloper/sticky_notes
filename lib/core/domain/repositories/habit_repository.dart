@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import '../entities/habit.dart';
-
 abstract class HabitRepository {
   Future<Either<String, List<Habit>>> getUserHabits(int userId);
   Future<Either<String, Habit>> createHabit(Habit habit);

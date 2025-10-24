@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
-
 class AuthForm extends StatefulWidget {
   final Function(bool isSignUp)? onModeChanged;
-
   const AuthForm({super.key, this.onModeChanged});
-
   @override
   State<AuthForm> createState() => _AuthFormState();
 }
-
 class _AuthFormState extends State<AuthForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
   bool _isSignUp = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -30,7 +24,6 @@ class _AuthFormState extends State<AuthForm> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -150,9 +143,7 @@ class _AuthFormState extends State<AuthForm> {
               ),
               const SizedBox(height: 16),
             ],
-
             const SizedBox(height: 24),
-
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
                 return ElevatedButton(
@@ -222,7 +213,6 @@ class _AuthFormState extends State<AuthForm> {
       ),
     );
   }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -271,7 +261,6 @@ class _AuthFormState extends State<AuthForm> {
       ),
     );
   }
-
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_isSignUp) {

@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-
 class User extends Equatable {
   final int? id;
   final String email;
@@ -7,7 +6,6 @@ class User extends Equatable {
   final DateTime createdAt;
   final DateTime? lastLoginAt;
   final String? avatarPath;
-
   const User({
     this.id,
     required this.email,
@@ -16,10 +14,8 @@ class User extends Equatable {
     this.lastLoginAt,
     this.avatarPath,
   });
-
   @override
   List<Object?> get props => [id, email, username, createdAt, lastLoginAt, avatarPath];
-
   User copyWith({
     int? id,
     String? email,

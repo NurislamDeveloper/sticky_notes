@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_config.dart';
-
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
@@ -10,7 +9,6 @@ class AppTheme {
       ),
       useMaterial3: true,
       scaffoldBackgroundColor: AppConfig.backgroundColor,
-      
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
@@ -22,7 +20,6 @@ class AppTheme {
           color: Colors.white,
         ),
       ),
-      
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppConfig.primaryColor,
@@ -37,7 +34,6 @@ class AppTheme {
           ),
         ),
       ),
-      
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -63,7 +59,6 @@ class AppTheme {
         fillColor: Colors.grey[50],
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
-      
       cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -71,7 +66,6 @@ class AppTheme {
         ),
         margin: const EdgeInsets.all(8),
       ),
-      
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,

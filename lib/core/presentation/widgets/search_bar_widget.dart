@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
 class SearchBarWidget extends StatelessWidget {
   final String hintText;
   final ValueChanged<String> onChanged;
   final VoidCallback? onClear;
   final bool showClearButton;
-
   const SearchBarWidget({
     super.key,
     required this.hintText,
@@ -13,7 +11,6 @@ class SearchBarWidget extends StatelessWidget {
     this.onClear,
     this.showClearButton = false,
   });
-
   @override
   Widget build(BuildContext context) {
     return Container(

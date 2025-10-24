@@ -2,78 +2,77 @@ import 'package:flutter/material.dart';
 import '../../injection/injection_container.dart' as di;
 import '../../domain/entities/habit.dart';
 import '../../domain/usecases/create_habit_usecase.dart';
-
+import '../widgets/collapsible_widgets.dart';
+import '../widgets/cards/rule_card.dart';
+import '../../constants/app_strings.dart';
+import '../../constants/app_colors.dart';
 class CreateHabitPage extends StatefulWidget {
   final int userId;
-
   const CreateHabitPage({super.key, required this.userId});
-
   @override
   State<CreateHabitPage> createState() => _CreateHabitPageState();
 }
-
 class _CreateHabitPageState extends State<CreateHabitPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _targetDaysController = TextEditingController(text: '30');
-  
   String _selectedCategory = 'Health';
   String _selectedColor = '#3B82F6';
   String _selectedIcon = 'fitness_center';
   
   final List<HabitRule> _rules = [
     const HabitRule(
-      title: 'Make it Specific',
-      description: 'Define exactly what you will do, when, and where. Instead of "exercise more," say "I will do 20 push-ups every morning in my bedroom."',
+      title: AppStrings.rule1Title,
+      description: AppStrings.rule1Description,
+      isAccepted: false,
     ),
     const HabitRule(
-      title: 'Start Small',
-      description: 'Begin with a habit so small it\'s impossible to fail. You can always build up from there. Better to do 1 push-up daily than 100 push-ups once.',
+      title: AppStrings.rule2Title,
+      description: AppStrings.rule2Description,
+      isAccepted: false,
     ),
     const HabitRule(
-      title: 'Stack with Existing Habits',
-      description: 'Attach your new habit to something you already do consistently. "After I brush my teeth, I will do 5 push-ups."',
+      title: AppStrings.rule3Title,
+      description: AppStrings.rule3Description,
+      isAccepted: false,
     ),
     const HabitRule(
-      title: 'Track Progress',
-      description: 'Use this app to track your daily progress. Seeing your streak grow will motivate you to continue and not break the chain.',
+      title: AppStrings.rule4Title,
+      description: AppStrings.rule4Description,
+      isAccepted: false,
     ),
   ];
-
   final List<String> _categories = [
-    'Health',
-    'Fitness',
-    'Learning',
-    'Productivity',
-    'Mindfulness',
-    'Social',
-    'Creative',
-    'Other',
+    AppStrings.health,
+    AppStrings.fitness,
+    AppStrings.learning,
+    AppStrings.productivity,
+    AppStrings.mindfulness,
+    AppStrings.social,
+    AppStrings.creative,
+    AppStrings.other,
   ];
-
   final List<Map<String, String>> _colors = [
-    {'name': 'Blue', 'value': '#3B82F6'},
-    {'name': 'Green', 'value': '#10B981'},
-    {'name': 'Purple', 'value': '#8B5CF6'},
-    {'name': 'Orange', 'value': '#F59E0B'},
-    {'name': 'Red', 'value': '#EF4444'},
-    {'name': 'Pink', 'value': '#EC4899'},
-    {'name': 'Indigo', 'value': '#6366F1'},
-    {'name': 'Teal', 'value': '#14B8A6'},
+    {'name': AppStrings.blue, 'value': '#3B82F6'},
+    {'name': AppStrings.green, 'value': '#10B981'},
+    {'name': AppStrings.purple, 'value': '#8B5CF6'},
+    {'name': AppStrings.orange, 'value': '#F59E0B'},
+    {'name': AppStrings.red, 'value': '#EF4444'},
+    {'name': AppStrings.pink, 'value': '#EC4899'},
+    {'name': AppStrings.indigo, 'value': '#6366F1'},
+    {'name': AppStrings.teal, 'value': '#14B8A6'},
   ];
-
   final List<Map<String, String>> _icons = [
-    {'name': 'Fitness', 'value': 'fitness_center'},
-    {'name': 'Book', 'value': 'book'},
-    {'name': 'Water', 'value': 'water_drop'},
-    {'name': 'Sleep', 'value': 'bedtime'},
-    {'name': 'Food', 'value': 'restaurant'},
-    {'name': 'Work', 'value': 'work'},
-    {'name': 'School', 'value': 'school'},
-    {'name': 'Home', 'value': 'home'},
+    {'name': AppStrings.fitnessIcon, 'value': 'fitness_center'},
+    {'name': AppStrings.bookIcon, 'value': 'book'},
+    {'name': AppStrings.waterIcon, 'value': 'water_drop'},
+    {'name': AppStrings.sleepIcon, 'value': 'bedtime'},
+    {'name': AppStrings.foodIcon, 'value': 'restaurant'},
+    {'name': AppStrings.workIcon, 'value': 'work'},
+    {'name': AppStrings.schoolIcon, 'value': 'school'},
+    {'name': AppStrings.homeIcon, 'value': 'home'},
   ];
-
   @override
   void dispose() {
     _titleController.dispose();
@@ -82,15 +81,94 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
     super.dispose();
   }
 
+  void _createHabit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        final params = CreateHabitParams(
+          userId: widget.userId,
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          category: _selectedCategory,
+          targetDays: int.parse(_targetDaysController.text),
+          color: _selectedColor,
+          icon: _selectedIcon,
+        );
+        final createHabitUseCase = di.sl<CreateHabitUseCase>();
+        createHabitUseCase.call(params).then((result) {
+          result.fold(
+            (failure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.error, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(failure)),
+                    ],
+                  ),
+                  backgroundColor: Colors.red[600],
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            },
+            (habit) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(AppStrings.habitCreatedSuccess),
+                    ],
+                  ),
+                  backgroundColor: Colors.green[600],
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+              Navigator.pop(context, true); 
+            },
+          );
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('${AppStrings.habitCreatedError} $e')),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Create New Habit'),
-        backgroundColor: const Color(0xFF1E3A8A),
+        title: const Text(AppStrings.createNewHabitWithRules),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: _createHabit,
+            icon: Icon(
+              Icons.check_circle,
+              color: Colors.white,
+            ),
+            tooltip: 'Create Habit',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -99,12 +177,23 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildRulesSection(),
+                CollapsibleSection(
+                  title: AppStrings.fourRulesTitle,
+                  icon: Icons.lightbulb_outline,
+                  initiallyExpanded: false,
+                  content: _buildRulesContent(),
+                ),
                 const SizedBox(height: 32),
+                
+                // Voice Input Section
+                // Removed voice input section
+                
+                // Manual Form Section
                 _buildFormSection(),
                 const SizedBox(height: 32),
                 _buildCustomizationSection(),
                 const SizedBox(height: 32),
+                
                 _buildCreateButton(),
               ],
             ),
@@ -112,126 +201,26 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
         ),
       );
   }
-
-  Widget _buildRulesSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  Widget _buildRulesContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppStrings.fourRulesDescription,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 16,
+          ),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E3A8A).withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.lightbulb_outline,
-                color: Colors.white,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '4 Rules for Building Habits',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Follow these proven principles to create habits that stick:',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._rules.asMap().entries.map((entry) {
-            final index = entry.key;
-            final rule = entry.value;
-            return _buildRuleCard(rule, index + 1);
-          }),
-        ],
-      ),
+        const SizedBox(height: 20),
+        ..._rules.asMap().entries.map((entry) {
+          final index = entry.key;
+          final rule = entry.value;
+          return RuleCard(rule: rule, number: index + 1);
+        }),
+      ],
     );
   }
-
-  Widget _buildRuleCard(HabitRule rule, int number) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                '$number',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  rule.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  rule.description,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFormSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -250,7 +239,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Habit Details',
+            AppStrings.habitDetails,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1E3A8A),
@@ -260,8 +249,8 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           TextFormField(
             controller: _titleController,
             decoration: InputDecoration(
-              labelText: 'Habit Title',
-              hintText: 'e.g., Drink 8 glasses of water',
+              labelText: AppStrings.habitTitle,
+              hintText: AppStrings.habitTitleHint,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -269,7 +258,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a habit title';
+                return AppStrings.pleaseEnterHabitTitle;
               }
               return null;
             },
@@ -278,8 +267,8 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           TextFormField(
             controller: _descriptionController,
             decoration: InputDecoration(
-              labelText: 'Description',
-              hintText: 'Why is this habit important to you?',
+              labelText: AppStrings.description,
+              hintText: AppStrings.descriptionHint,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -288,7 +277,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
             maxLines: 3,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a description';
+                return AppStrings.pleaseEnterDescription;
               }
               return null;
             },
@@ -297,7 +286,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           DropdownButtonFormField<String>(
             initialValue: _selectedCategory,
             decoration: InputDecoration(
-              labelText: 'Category',
+              labelText: AppStrings.category,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -319,8 +308,8 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           TextFormField(
             controller: _targetDaysController,
             decoration: InputDecoration(
-              labelText: 'Target Days',
-              hintText: 'How many days to build this habit?',
+              labelText: AppStrings.targetDays,
+              hintText: AppStrings.targetDaysHint,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -329,11 +318,11 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter target days';
+                return AppStrings.pleaseEnterTargetDays;
               }
               final days = int.tryParse(value);
               if (days == null || days <= 0) {
-                return 'Please enter a valid number of days';
+                return AppStrings.pleaseEnterValidDays;
               }
               return null;
             },
@@ -342,7 +331,6 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
       ),
     );
   }
-
   Widget _buildCustomizationSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -361,7 +349,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Customization',
+            AppStrings.customization,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1E3A8A),
@@ -369,7 +357,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Color',
+            AppStrings.color,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -410,7 +398,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Icon',
+            AppStrings.icon,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -453,80 +441,11 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
       ),
     );
   }
-
   Widget _buildCreateButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () async {
-          if (_formKey.currentState?.validate() ?? false) {
-            try {
-              final params = CreateHabitParams(
-                userId: widget.userId,
-                title: _titleController.text.trim(),
-                description: _descriptionController.text.trim(),
-                category: _selectedCategory,
-                targetDays: int.parse(_targetDaysController.text),
-                color: _selectedColor,
-                icon: _selectedIcon,
-              );
-
-              final createHabitUseCase = di.sl<CreateHabitUseCase>();
-              final result = await createHabitUseCase.call(params);
-              
-              result.fold(
-                (failure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          const Icon(Icons.error, color: Colors.white),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(failure)),
-                        ],
-                      ),
-                      backgroundColor: Colors.red[600],
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                },
-                (habit) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text('Habit created successfully!'),
-                        ],
-                      ),
-                      backgroundColor: Colors.green[600],
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                  Navigator.pop(context, true); // Return true to indicate habit was created
-                },
-              );
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      const Icon(Icons.error, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text('Error creating habit: $e')),
-                    ],
-                  ),
-                  backgroundColor: Colors.red[600],
-                  behavior: SnackBarBehavior.floating,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            }
-          }
-        },
+        onPressed: _createHabit,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF1E3A8A),
           foregroundColor: Colors.white,
@@ -536,7 +455,7 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
           ),
         ),
         child: const Text(
-          'Create Habit',
+          AppStrings.createHabit,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -545,7 +464,6 @@ class _CreateHabitPageState extends State<CreateHabitPage> {
       ),
     );
   }
-
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'fitness_center':
